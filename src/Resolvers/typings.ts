@@ -7,3 +7,9 @@ export interface UserCreate {
 export interface SignupUser{
     input:UserCreate
 }
+export interface LoginUser{
+    input:{
+        email: string;
+        password: string;
+    }
+}

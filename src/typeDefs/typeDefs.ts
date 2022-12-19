@@ -10,33 +10,36 @@ const typeDefs = gql `
         role:String
     }
 
-
     input signup{
         email:String!
         username:String!
         password:String!
     }
 
-    type Message{
-        message:String!
-        Error:String
+    input login{
+        email:String!
+        password:String!
     }
 
-    type signupSuccess  {
+    type userSuccess  {
         user: User!
         message: String!
         statusCode: Int!
+        token: String
     }
 
-    type signupFailure  {
+    
+
+    type failure  {
         Error: String!
         statusCode: Int!
     }
 
-    union signupReturn = signupFailure | signupSuccess
-    
+    union userReturn = failure | userSuccess
+
     type Mutation{
-        Signup(input:signup!): signupReturn!
+        Signup(input:signup!): userReturn!
+        Login(input:login!): userReturn!
     }
     type Query{
         singleUser(id:String): User!

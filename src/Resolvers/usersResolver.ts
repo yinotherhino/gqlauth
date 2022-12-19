@@ -1,15 +1,16 @@
 import usersModel, { UserInstance } from "../models/UsersSchema";
 import bcrypt, { genSalt } from 'bcrypt';
-import { SignupUser } from "./typings";
+import { SignupUser, LoginUser } from "./typings";
+import { generateSignature } from "../utils";
 
 const UserResolver = {
-    signupReturn: {
+    userReturn: {
         __resolveType: (obj:any) => {
             if(obj.user){
-                return "signupSuccess"
+                return "userSuccess"
             }
             if(obj.Error){
-                return "signupFailure"
+                return "failure"
             }
             return null
         }
@@ -47,26 +48,25 @@ const UserResolver = {
             }
         },
 
-        // Login: async( _:unknown, args:{email:string, password:string} )=>{
-        //     try {
-        //         const {email, password} = args
+        Login: async( _:unknown, args:LoginUser )=>{
+            try {
+                const {email, password} = args.input;
                 
 
-        //         const user = await usersModel.findOne({email});
-        //         if(!user){
-        //         return {statusCode:401, Error:"Invalid credentials."};
-        //         }
-        //         else{
-        //             const isCorrectPass = await bcrypt.compare(password, user.password);
-        //             if (isCorrectPass){
-        //                 return {statusCode:200, message:"Login successful", user};
-        //             }
-        //         }
-        //     } 
-        //     catch (err) {
-        //         return {statusCode:500, Error:"Something went wrong."}
-        //     }
-        // },
+                const user = await usersModel.findOne({email});
+                if(user){
+                    const isCorrectPass = await bcrypt.compare(password, user.password);
+                    if (isCorrectPass){
+                        const token = await generateSignature({username:user.username, role:user.role, email:user.email, id:user._id})
+                        return {statusCode:200, message:"Login successful", user, token};
+                    }
+                }
+                return {statusCode:401, Error:"Invalid credentials."};
+            } 
+            catch (err) {
+                return {statusCode:500, Error:"Something went wrong."}
+            }
+        },
 
     }
 }
